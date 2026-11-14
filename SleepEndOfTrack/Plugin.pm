@@ -54,14 +54,61 @@ sub _pluginDataFor {
 sub handleFeed {
 	my ($client, $callback, $args) = @_;
 
-	my $text = $client ? _scheduleSleep($client) : cstring($client, 'PLUGIN_SLEEPENDOFTRACK_NOTHING');
+	# Un item_id signifie que Material ouvre un sous-élément (le message-bouton) :
+	# XMLBrowser rappelle alors ce feed, il ne faut pas reprogrammer la veille.
+	my $itemId   = $args && $args->{params} && $args->{params}->{item_id};
+	my $subLevel = defined $itemId && length $itemId;
 
-	$callback->({
-		items => [ {
-			name => $text,
-			type => 'text',
-		} ],
-	});
+	my $title;    # titre du morceau visé, undef si rien n'est programmé
+	if ($client && $subLevel) {
+		# Jamais de programmation ici, même sans appel précédent en mémoire
+		# (page restée ouverte pendant un redémarrage de LMS, par exemple).
+		$title = $lastRun{$client->id} && $lastRun{$client->id}->{title};
+	}
+	elsif ($client) {
+		$title = _scheduleSleep($client);
+	}
+
+	# Un seul élément : confirmation et temps restant avant la veille (calculé
+	# à l'ouverture, la page est statique).
+	my $remaining = $client ? $client->sleepTime - Time::HiRes::time() : 0;
+	my $text = !defined $title ? cstring($client, 'PLUGIN_SLEEPENDOFTRACK_NOTHING')
+	         : $remaining > 0  ? cstring($client, 'PLUGIN_SLEEPENDOFTRACK_SCHEDULED_IN', $title, _formatDuration($remaining))
+	         :                   cstring($client, 'PLUGIN_SLEEPENDOFTRACK_SCHEDULED', $title);
+
+	my @items = ( {
+		# Le message lui-même sert de bouton de retour. 'redirect' + nextWindow :
+		# Material le traite comme un élément « texte » (isTextItem) qui exécute
+		# l'action, affiche son titre en toast et revient à l'écran précédent,
+		# sans ouvrir de page.
+		name       => $text,
+		type       => 'redirect',
+		url        => sub { _backFeed($text, @_) },
+		nextWindow => 'parent',
+	} );
+
+	$callback->({ items => \@items });
+}
+
+# Réponse du message-bouton, jamais affichée (Material revient en arrière).
+# Deux éléments exprès : avec un seul élément texte, Material l'entoure d'un
+# <div> de mise en page et le toast affiche ce HTML brut ; avec plusieurs,
+# le toast reprend le titre du bouton tapé, en texte simple. (Une liste vide
+# ne marche pas non plus : LMS la remplace par un élément « Vide ».)
+sub _backFeed {
+	my ($label, $client, $callback, $args) = @_;
+	$callback->({ items => [
+		{ name => $label, type => 'text' },
+		{ name => $label, type => 'text' },
+	] });
+}
+
+sub _formatDuration {
+	my $seconds = int(shift() + 0.5);
+	my $h = int($seconds / 3600);
+	my $m = int(($seconds % 3600) / 60);
+	my $s = $seconds % 60;
+	return $h ? sprintf('%d:%02d:%02d', $h, $m, $s) : sprintf('%d:%02d', $m, $s);
 }
 
 sub _scheduleSleep {
@@ -73,21 +120,19 @@ sub _scheduleSleep {
 	if ( my $last = $lastRun{$id} ) {
 		if ( $now - $last->{time} < DEBOUNCE_SECONDS ) {
 			main::INFOLOG && $log->is_info && $log->info("Ignoring repeated call for " . $client->name);
-			return $last->{text};
+			return $last->{title};
 		}
 	}
 
-	my $text;
+	my $title;
 	my $controller = $client->controller;
 	my $duration   = $client->isPlaying ? $controller->playingSongDuration : 0;
 
 	if ( $duration && $duration > 0 ) {
-		my $title = _currentTitle($client);
+		$title = _currentTitle($client);
 
 		# Commande native : sleep (durée - position courante)
 		$client->execute( ['jiveendoftracksleep'] );
-
-		$text = cstring($client, 'PLUGIN_SLEEPENDOFTRACK_SCHEDULED', $title);
 
 		main::INFOLOG && $log->is_info && $log->info(sprintf(
 			'%s: sleep scheduled in %.0fs (end of "%s")',
@@ -95,13 +140,12 @@ sub _scheduleSleep {
 		));
 	}
 	else {
-		$text = cstring($client, 'PLUGIN_SLEEPENDOFTRACK_NOTHING');
 		main::INFOLOG && $log->is_info && $log->info($client->name . ': nothing playing with a known duration');
 	}
 
-	$lastRun{$id} = { time => $now, text => $text };
+	$lastRun{$id} = { time => $now, title => $title };
 
-	return $text;
+	return $title;
 }
 
 sub _currentTitle {

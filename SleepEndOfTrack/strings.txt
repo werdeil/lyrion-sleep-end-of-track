@@ -13,3 +13,7 @@ PLUGIN_SLEEPENDOFTRACK_SCHEDULED
 PLUGIN_SLEEPENDOFTRACK_NOTHING
 	EN	Nothing playing
 	FR	Rien en lecture
+
+PLUGIN_SLEEPENDOFTRACK_SCHEDULED_IN
+	EN	Sleep scheduled at the end of "%s" (in %s)
+	FR	Veille programmée à la fin de "%s" (dans %s)
