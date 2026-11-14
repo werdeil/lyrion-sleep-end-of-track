@@ -1,0 +1,55 @@
+name: Release
+
+# Lancement manuel : Actions → Release → Run workflow, avec la version X.Y.Z.
+# Exécute scripts/release.sh (préparation puis publication) : version dans
+# install.xml, zip, SHA1 dans repo.xml, commit "chore(release)", tag et
+# release GitHub avec le zip.
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: "Version à publier (X.Y.Z)"
+        required: true
+        type: string
+
+permissions:
+  contents: write
+
+concurrency:
+  group: release
+  cancel-in-progress: false
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main'
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Install tools
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq zip libxml2-utils
+
+      - name: Configure git
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+      - name: Prepare
+        env:
+          VERSION: ${{ inputs.version }}
+        run: scripts/release.sh "$VERSION"
+
+      - name: Show changes
+        run: git --no-pager diff
+
+      - name: Publish
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+          VERSION: ${{ inputs.version }}
+        run: scripts/release.sh --publish "$VERSION"

@@ -28,6 +28,11 @@ then install **Sleep at end of track** from the plugin list and restart LMS.
 
 ## Release
 
+From GitHub: *Actions → Release → Run workflow*, enter the version (`X.Y.Z`).
+The workflow runs the same script as below.
+
+Or locally:
+
 ```sh
 scripts/release.sh 1.0.1            # bump install.xml, build dist/ zip, update repo.xml
 scripts/release.sh --publish 1.0.1  # commit, tag, push, create the GitHub release
