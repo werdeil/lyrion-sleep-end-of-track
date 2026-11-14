@@ -37,6 +37,20 @@ sub initPlugin {
 
 sub getDisplayName { 'PLUGIN_SLEEPENDOFTRACK' }
 
+# Deux icônes :
+# - install.xml / repo.xml : vignette en couleur (icon.png) pour la vue Plugins ;
+# - menu des apps (Material, Jive) : glyphe icon_svg.png, que Material remplace
+#   par icon.svg teinté selon le thème (convention "*_svg.png").
+# OPMLBased lit l'icône du menu via _pluginDataFor('icon') ; la page Plugins
+# lit install.xml directement et n'est pas concernée par cette surcharge.
+use constant APP_MENU_ICON => 'plugins/SleepEndOfTrack/html/images/icon_svg.png';
+
+sub _pluginDataFor {
+	my ($class, $key) = @_;
+	return APP_MENU_ICON if $key && $key eq 'icon';
+	return $class->SUPER::_pluginDataFor($key);
+}
+
 sub handleFeed {
 	my ($client, $callback, $args) = @_;
 
