@@ -1,0 +1,17 @@
+<?xml version="1.0"?>
+<extension>
+	<id>D0B6A377-C388-4271-B457-685E10DDF775</id>
+	<name>PLUGIN_SLEEPENDOFTRACK</name>
+	<module>Plugins::SleepEndOfTrack::Plugin</module>
+	<version>1.0.0</version>
+	<description>PLUGIN_SLEEPENDOFTRACK_DESC</description>
+	<creator>werdeil</creator>
+	<category>misc</category>
+	<defaultState>enabled</defaultState>
+	<type>2</type><!-- type=extension -->
+	<targetApplication>
+		<id>Lyrion Music Server</id>
+		<minVersion>8.0</minVersion>
+		<maxVersion>*</maxVersion>
+	</targetApplication>
+</extension>

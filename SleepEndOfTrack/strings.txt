@@ -1,0 +1,15 @@
+PLUGIN_SLEEPENDOFTRACK
+	EN	Sleep at end of track
+	FR	Veille fin du morceau
+
+PLUGIN_SLEEPENDOFTRACK_DESC
+	EN	App that, when opened, puts the current player to sleep at the end of the current track.
+	FR	Application qui, à son ouverture, programme la veille du player courant à la fin du morceau en cours.
+
+PLUGIN_SLEEPENDOFTRACK_SCHEDULED
+	EN	Sleep scheduled at the end of "%s"
+	FR	Veille programmée à la fin de "%s"
+
+PLUGIN_SLEEPENDOFTRACK_NOTHING
+	EN	Nothing playing
+	FR	Rien en lecture
