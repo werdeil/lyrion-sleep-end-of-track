@@ -15,7 +15,7 @@
 			<link>https://github.com/werdeil/lyrion-sleep-end-of-track</link>
 			<icon>https://raw.githubusercontent.com/werdeil/lyrion-sleep-end-of-track/main/SleepEndOfTrack/HTML/EN/plugins/SleepEndOfTrack/html/images/icon_svg.png</icon>
 			<url>https://github.com/werdeil/lyrion-sleep-end-of-track/releases/download/v1.0.0/SleepEndOfTrack-1.0.0.zip</url>
-			<sha>0000000000000000000000000000000000000000</sha>
+			<sha>cbdc17567205e5f60d9ed2612934b1d89f8afa8c</sha>
 		</plugin>
 	</plugins>
 </extensions>
