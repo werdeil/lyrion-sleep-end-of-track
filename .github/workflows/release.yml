@@ -1,15 +1,12 @@
 name: Release
 
-# Lancement manuel : Actions → Release → Run workflow, avec la version X.Y.Z.
-# Exécute scripts/release.sh (préparation puis publication) : version dans
-# install.xml, zip, SHA1 dans repo.xml, commit "chore(release)", tag et
-# release GitHub avec le zip.
+# Run from Actions → Release → Run workflow; wraps scripts/release.sh.
 
 on:
   workflow_dispatch:
     inputs:
       version:
-        description: "Version à publier (X.Y.Z)"
+        description: "Version to release (X.Y.Z)"
         required: true
         type: string
 

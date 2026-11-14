@@ -1,8 +1,7 @@
 package Plugins::SleepEndOfTrack::Plugin;
 
-# App « Veille fin du morceau » : ouvrir l'app programme immédiatement la
-# veille du player à la fin du morceau en cours, via la commande native
-# `jiveendoftracksleep` (Slim::Control::Jive), celle de SqueezePlay / Radio.
+# App that, when opened, puts the player to sleep at the end of the current
+# track, using SqueezePlay's native `jiveendoftracksleep` command.
 
 use strict;
 use base qw(Slim::Plugin::OPMLBased);
@@ -10,10 +9,14 @@ use base qw(Slim::Plugin::OPMLBased);
 use Time::HiRes;
 
 use Slim::Utils::Log;
-use Slim::Utils::Strings qw(string cstring);
+use Slim::Utils::Strings qw(cstring);
 
-# Fenêtre anti-rebond : Material peut recharger le menu (retour, refresh).
+# Material may reload the menu (back navigation, refresh).
 use constant DEBOUNCE_SECONDS => 5;
+
+# install.xml's icon is for the plugin manager; the apps menu gets a glyph
+# that Material swaps for the theme-tinted icon.svg (*_svg.png convention).
+use constant APP_MENU_ICON => 'plugins/SleepEndOfTrack/html/images/icon_svg.png';
 
 my $log = Slim::Utils::Log->addLogCategory({
 	category     => 'plugin.sleependoftrack',
@@ -21,8 +24,7 @@ my $log = Slim::Utils::Log->addLogCategory({
 	description  => 'PLUGIN_SLEEPENDOFTRACK',
 });
 
-# clientId => { time => epoch, text => dernier message affiché }
-my %lastRun;
+my %lastRun;    # client id => { time, title }
 
 sub initPlugin {
 	my $class = shift;
@@ -37,14 +39,7 @@ sub initPlugin {
 
 sub getDisplayName { 'PLUGIN_SLEEPENDOFTRACK' }
 
-# Deux icônes :
-# - install.xml / repo.xml : vignette en couleur (icon.png) pour la vue Plugins ;
-# - menu des apps (Material, Jive) : glyphe icon_svg.png, que Material remplace
-#   par icon.svg teinté selon le thème (convention "*_svg.png").
-# OPMLBased lit l'icône du menu via _pluginDataFor('icon') ; la page Plugins
-# lit install.xml directement et n'est pas concernée par cette surcharge.
-use constant APP_MENU_ICON => 'plugins/SleepEndOfTrack/html/images/icon_svg.png';
-
+# OPMLBased reads the apps menu icon through this method.
 sub _pluginDataFor {
 	my ($class, $key) = @_;
 	return APP_MENU_ICON if $key && $key eq 'icon';
@@ -54,47 +49,36 @@ sub _pluginDataFor {
 sub handleFeed {
 	my ($client, $callback, $args) = @_;
 
-	# Un item_id signifie que Material ouvre un sous-élément (le message-bouton) :
-	# XMLBrowser rappelle alors ce feed, il ne faut pas reprogrammer la veille.
+	# Tapping the item re-runs this feed with an item_id: never reschedule then.
 	my $itemId   = $args && $args->{params} && $args->{params}->{item_id};
 	my $subLevel = defined $itemId && length $itemId;
 
-	my $title;    # titre du morceau visé, undef si rien n'est programmé
+	my $title;
 	if ($client && $subLevel) {
-		# Jamais de programmation ici, même sans appel précédent en mémoire
-		# (page restée ouverte pendant un redémarrage de LMS, par exemple).
 		$title = $lastRun{$client->id} && $lastRun{$client->id}->{title};
 	}
 	elsif ($client) {
 		$title = _scheduleSleep($client);
 	}
 
-	# Un seul élément : confirmation et temps restant avant la veille (calculé
-	# à l'ouverture, la page est statique).
 	my $remaining = $client ? $client->sleepTime - Time::HiRes::time() : 0;
 	my $text = !defined $title ? cstring($client, 'PLUGIN_SLEEPENDOFTRACK_NOTHING')
 	         : $remaining > 0  ? cstring($client, 'PLUGIN_SLEEPENDOFTRACK_SCHEDULED_IN', $title, _formatDuration($remaining))
 	         :                   cstring($client, 'PLUGIN_SLEEPENDOFTRACK_SCHEDULED', $title);
 
-	my @items = ( {
-		# Le message lui-même sert de bouton de retour. 'redirect' + nextWindow :
-		# Material le traite comme un élément « texte » (isTextItem) qui exécute
-		# l'action, affiche son titre en toast et revient à l'écran précédent,
-		# sans ouvrir de page.
+	# redirect + nextWindow: Material runs it, shows the title as a toast and
+	# goes back instead of opening a page.
+	$callback->({ items => [ {
 		name       => $text,
 		type       => 'redirect',
 		url        => sub { _backFeed($text, @_) },
 		nextWindow => 'parent',
-	} );
-
-	$callback->({ items => \@items });
+	} ] });
 }
 
-# Réponse du message-bouton, jamais affichée (Material revient en arrière).
-# Deux éléments exprès : avec un seul élément texte, Material l'entoure d'un
-# <div> de mise en page et le toast affiche ce HTML brut ; avec plusieurs,
-# le toast reprend le titre du bouton tapé, en texte simple. (Une liste vide
-# ne marche pas non plus : LMS la remplace par un élément « Vide ».)
+# Never displayed. Two items on purpose: Material wraps a single text item in
+# a <div> that would show up raw in the toast, and LMS turns an empty list
+# into an "Empty" item.
 sub _backFeed {
 	my ($label, $client, $callback, $args) = @_;
 	$callback->({ items => [
@@ -111,6 +95,7 @@ sub _formatDuration {
 	return $h ? sprintf('%d:%02d:%02d', $h, $m, $s) : sprintf('%d:%02d', $m, $s);
 }
 
+# Returns the title of the track sleep was scheduled on, undef if none.
 sub _scheduleSleep {
 	my $client = shift;
 
@@ -125,13 +110,10 @@ sub _scheduleSleep {
 	}
 
 	my $title;
-	my $controller = $client->controller;
-	my $duration   = $client->isPlaying ? $controller->playingSongDuration : 0;
+	my $duration = $client->isPlaying ? $client->controller->playingSongDuration : 0;
 
 	if ( $duration && $duration > 0 ) {
 		$title = _currentTitle($client);
-
-		# Commande native : sleep (durée - position courante)
 		$client->execute( ['jiveendoftracksleep'] );
 
 		main::INFOLOG && $log->is_info && $log->info(sprintf(
@@ -155,7 +137,6 @@ sub _currentTitle {
 	my $track = $song->currentTrack || $song->track or return '';
 	my $url   = $track->url;
 
-	# Flux distants (Deezer, Bandcamp...) : métadonnées fournies par le handler
 	if ( $track->remote ) {
 		my $handler = Slim::Player::ProtocolHandlers->handlerForURL($url);
 		if ( $handler && $handler->can('getMetadataFor') ) {
