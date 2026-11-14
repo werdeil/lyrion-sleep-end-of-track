@@ -21,7 +21,7 @@ can't pin its own menus to the home screen, only apps. Pin
 In LMS: *Settings → Plugins → Additional repositories*, add
 
 ```
-https://raw.githubusercontent.com/werdeil/lyrion-sleep-shortcut/main/repo.xml
+https://raw.githubusercontent.com/werdeil/lyrion-sleep-end-of-track/main/repo.xml
 ```
 
 then install **Sleep at end of track** from the plugin list and restart LMS.

@@ -5,12 +5,12 @@
 #                                           zip dans dist/, SHA1 et URL dans repo.xml
 #   scripts/release.sh --publish <version>  publie : commit, tag, push, release GitHub
 #
-# Variable optionnelle : GH_REPO (défaut werdeil/lyrion-sleep-shortcut)
+# Variable optionnelle : GH_REPO (défaut werdeil/lyrion-sleep-end-of-track)
 
 set -euo pipefail
 
 PLUGIN=SleepEndOfTrack
-GH_REPO=${GH_REPO:-werdeil/lyrion-sleep-shortcut}
+GH_REPO=${GH_REPO:-werdeil/lyrion-sleep-end-of-track}
 ROOT=$(cd "$(dirname "$0")/.." && pwd)
 cd "$ROOT"
 

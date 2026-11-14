@@ -12,9 +12,9 @@
 			<desc lang="FR">Application qui, à son ouverture, programme la veille du player courant à la fin du morceau en cours. À épingler sur l'écran d'accueil de Material Skin pour un raccourci en un tap.</desc>
 			<creator>werdeil</creator>
 			<category>misc</category>
-			<link>https://github.com/werdeil/lyrion-sleep-shortcut</link>
-			<icon>https://raw.githubusercontent.com/werdeil/lyrion-sleep-shortcut/main/SleepEndOfTrack/HTML/EN/plugins/SleepEndOfTrack/html/images/icon_svg.png</icon>
-			<url>https://github.com/werdeil/lyrion-sleep-shortcut/releases/download/v1.0.0/SleepEndOfTrack-1.0.0.zip</url>
+			<link>https://github.com/werdeil/lyrion-sleep-end-of-track</link>
+			<icon>https://raw.githubusercontent.com/werdeil/lyrion-sleep-end-of-track/main/SleepEndOfTrack/HTML/EN/plugins/SleepEndOfTrack/html/images/icon_svg.png</icon>
+			<url>https://github.com/werdeil/lyrion-sleep-end-of-track/releases/download/v1.0.0/SleepEndOfTrack-1.0.0.zip</url>
 			<sha>0000000000000000000000000000000000000000</sha>
 		</plugin>
 	</plugins>
