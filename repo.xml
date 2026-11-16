@@ -5,7 +5,7 @@
 		<title lang="FR">Plugins Lyrion de werdeil</title>
 	</details>
 	<plugins>
-		<plugin name="SleepEndOfTrack" version="1.0.1" minTarget="8.0" maxTarget="*">
+		<plugin name="SleepEndOfTrack" version="1.0.2" minTarget="8.0" maxTarget="*">
 			<title lang="EN">Sleep at end of track</title>
 			<title lang="FR">Veille fin du morceau</title>
 			<desc lang="EN">App that, when opened, puts the current player to sleep at the end of the current track. Pin it to the Material Skin home screen for a one-tap shortcut.</desc>
@@ -14,8 +14,8 @@
 			<category>misc</category>
 			<link>https://github.com/werdeil/lyrion-sleep-end-of-track</link>
 			<icon>https://raw.githubusercontent.com/werdeil/lyrion-sleep-end-of-track/main/SleepEndOfTrack/HTML/EN/plugins/SleepEndOfTrack/html/images/icon.png</icon>
-			<url>https://github.com/werdeil/lyrion-sleep-end-of-track/releases/download/v1.0.1/SleepEndOfTrack-1.0.1.zip</url>
-			<sha>fbabb0eef5fd63a6b2c01d46571a6cbb07e2c022</sha>
+			<url>https://github.com/werdeil/lyrion-sleep-end-of-track/releases/download/v1.0.2/SleepEndOfTrack-1.0.2.zip</url>
+			<sha>4217f43e75708fedbcb0bea94bc167fee1eb2a18</sha>
 		</plugin>
 	</plugins>
 </extensions>
