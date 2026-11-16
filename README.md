@@ -49,6 +49,10 @@ scripts/release.sh --publish 1.0.1  # commit, tag, push, create the GitHub relea
 
 Requires `zip`, `shasum`, `xmllint`, `perl` and an authenticated `gh`.
 
+## Sponsor
+
+If this plugin is useful to you, you can support its development through [GitHub Sponsors](https://github.com/sponsors/werdeil). It is entirely optional: the plugin stays free and MIT-licensed either way.
+
 ## License
 
 [MIT](LICENSE) © 2026 Vincent Verdeil.
