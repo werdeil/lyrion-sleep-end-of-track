@@ -68,12 +68,38 @@ sub handleFeed {
 
 	# redirect + nextWindow: Material runs it, shows the title as a toast and
 	# goes back instead of opening a page.
-	$callback->({ items => [ {
+	my @items = ( {
 		name       => $text,
 		type       => 'redirect',
 		url        => sub { _backFeed($text, @_) },
 		nextWindow => 'parent',
-	} ] });
+	} );
+
+	# Always offered on a sub-level call so the tapped index keeps existing
+	# even if the timer fired in the meantime.
+	if ( $client && ($remaining > 0 || $subLevel) ) {
+		push @items, {
+			name       => cstring($client, 'PLUGIN_SLEEPENDOFTRACK_CANCEL'),
+			type       => 'redirect',
+			url        => \&_cancelFeed,
+			nextWindow => 'parent',
+		};
+	}
+
+	$callback->({ items => \@items });
+}
+
+sub _cancelFeed {
+	my ($client, $callback, $args) = @_;
+
+	if ($client) {
+		$client->execute( ['sleep', 0] );
+		# Reopening the app right after must schedule again, not be debounced.
+		delete $lastRun{$client->id};
+		main::INFOLOG && $log->is_info && $log->info($client->name . ': sleep cancelled');
+	}
+
+	_backFeed(cstring($client, 'PLUGIN_SLEEPENDOFTRACK_CANCELLED'), $client, $callback, $args);
 }
 
 # Never displayed. Two items on purpose: Material wraps a single text item in

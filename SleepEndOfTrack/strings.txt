@@ -17,3 +17,11 @@ PLUGIN_SLEEPENDOFTRACK_NOTHING
 PLUGIN_SLEEPENDOFTRACK_SCHEDULED_IN
 	EN	Sleep scheduled at the end of "%s" (in %s)
 	FR	Veille programmée à la fin de "%s" (dans %s)
+
+PLUGIN_SLEEPENDOFTRACK_CANCEL
+	EN	Cancel sleep
+	FR	Annuler la veille
+
+PLUGIN_SLEEPENDOFTRACK_CANCELLED
+	EN	Sleep cancelled
+	FR	Veille annulée
