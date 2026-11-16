@@ -27,6 +27,14 @@ https://raw.githubusercontent.com/werdeil/lyrion-sleep-end-of-track/main/repo.xm
 
 then install **Sleep at end of track** from the plugin list and restart LMS.
 
+## Checks
+
+`scripts/check.sh` runs on every pull request and push to `main` (*CI* workflow):
+Perl compilation (against stubs of the LMS modules in `ci/stubs`), XML validity,
+version consistency between `install.xml` and `repo.xml`, EN/FR entries in
+`strings.txt` for every `PLUGIN_*` string used, and `shellcheck`. Run it locally
+before pushing (requires `perl` and `xmllint`, plus `shellcheck` if installed).
+
 ## Release
 
 From GitHub: *Actions → Release → Run workflow*, enter the version (`X.Y.Z`).
