@@ -44,10 +44,15 @@ Or locally:
 
 ```sh
 scripts/release.sh 1.0.1            # bump install.xml, build dist/ zip, update repo.xml
-scripts/release.sh --publish 1.0.1  # commit, tag, push, create the GitHub release
+scripts/release.sh --publish 1.0.1  # commit on release/v1.0.1, tag, create the GitHub release, open a PR to main
 ```
 
 Requires `zip`, `shasum`, `xmllint`, `perl` and an authenticated `gh`.
+
+`main` is protected, so the release commit (version bump and `repo.xml`) goes
+through a pull request: LMS users get the new version once it is merged. The
+workflow needs *Settings → Actions → General → Allow GitHub Actions to create
+and approve pull requests* to open it.
 
 ## Sponsor
 
