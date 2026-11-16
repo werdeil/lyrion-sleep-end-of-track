@@ -1,7 +1,8 @@
 #!/usr/bin/env bash
 # Usage:
 #   scripts/release.sh <version>            bump install.xml, build dist/ zip, update repo.xml
-#   scripts/release.sh --publish <version>  commit, tag, push and create the GitHub release
+#   scripts/release.sh --publish <version>  commit on release/v<version>, tag, create the GitHub
+#                                           release and open a pull request to main
 #
 # GH_REPO overrides the target repository (default werdeil/lyrion-sleep-end-of-track).
 
@@ -13,7 +14,7 @@ ROOT=$(cd "$(dirname "$0")/.." && pwd)
 cd "$ROOT"
 
 die()   { echo "error: $*" >&2; exit 1; }
-usage() { sed -n '2,6p' "$0" | sed 's/^# \{0,1\}//'; exit 1; }
+usage() { sed -n '2,7p' "$0" | sed 's/^# \{0,1\}//'; exit 1; }
 
 publish=0
 if [[ ${1:-} == --publish ]]; then publish=1; shift; fi
@@ -22,6 +23,7 @@ VERSION=${1:-}
 [[ $VERSION =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]] || die "version must be X.Y.Z (got: $VERSION)"
 
 TAG=v$VERSION
+BRANCH=release/$TAG
 ZIP=dist/$PLUGIN-$VERSION.zip
 URL=https://github.com/$GH_REPO/releases/download/$TAG/$PLUGIN-$VERSION.zip
 
@@ -64,6 +66,10 @@ publish() {
 	grep -q "version=\"$VERSION\"" repo.xml      || die "repo.xml is not at version $VERSION"
 	grep -q "<version>$VERSION</version>" "$PLUGIN/install.xml" || die "install.xml is not at version $VERSION"
 
+	git ls-remote --exit-code --heads origin "$BRANCH" >/dev/null 2>&1 && die "branch $BRANCH already exists on origin"
+
+	# main is protected: the release commit goes through a pull request.
+	git switch -c "$BRANCH"
 	git add "$PLUGIN/install.xml" repo.xml
 	git commit -m "chore(release): $TAG"
 	git tag -a "$TAG" -m "$TAG"
@@ -71,9 +77,23 @@ publish() {
 	# Tag and asset first, so repo.xml on main never points to a missing zip.
 	git push origin "$TAG"
 	gh release create "$TAG" "$ZIP" --repo "$GH_REPO" --title "$PLUGIN $VERSION" --generate-notes
-	git push origin HEAD:main
+	git push -u origin "$BRANCH"
+
+	local pr
+	pr=$(gh pr create --repo "$GH_REPO" --base main --head "$BRANCH" \
+		--title "chore(release): $TAG" \
+		--body "Points repo.xml to the $TAG release asset. LMS users get the update once this is merged.")
+
+	# Pull requests opened with the workflow token don't trigger workflows, so
+	# start CI explicitly: its result is required to merge.
+	if [[ ${GITHUB_ACTIONS:-} == true ]]; then
+		gh workflow run ci.yml --repo "$GH_REPO" --ref "$BRANCH"
+	fi
+
+	git switch -
 
 	echo "Published: $URL"
+	echo "Merge $pr to make it available to LMS users."
 	echo "LMS repository URL: https://raw.githubusercontent.com/$GH_REPO/main/repo.xml"
 }
 
