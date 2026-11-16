@@ -14,6 +14,7 @@ can't pin its own menus to the home screen, only apps. Pin
   there is no playing track with a known duration (radio streams, paused player).
 - A new tap reschedules on the current track; repeated calls within 5 seconds
   (menu reloads) are ignored.
+- A "Cancel sleep" item (shown while a sleep timer is active) cancels it.
 - English and French strings.
 
 ## Installation
