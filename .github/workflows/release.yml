@@ -1,4 +1,5 @@
 name: Release
+run-name: Release ${{ inputs.version }}
 
 # Run from Actions → Release → Run workflow; wraps scripts/release.sh.
 
